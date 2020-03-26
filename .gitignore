@@ -1,3 +1,5 @@
 NOTES.md
 .vscode
 *.exe
+*.env
+__pycache__/
