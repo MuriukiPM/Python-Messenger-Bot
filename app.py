@@ -1,8 +1,8 @@
 import random
 import sys
 from flask import Flask, request
-from pymessenger.bot import Bot
-from pymessenger import Element, Button
+from libs.pymessenger_modified import Bot
+from libs.pymessenger_modified import Element, Button
 import logging as log
 from os import environ as env
 from dotenv import load_dotenv
@@ -27,7 +27,7 @@ def receive_message():
     else:
     # get whatever message a user sent the bot
         output = request.get_json()
-        log.warn("OUTPUT: "+str(output))
+        # log.warn("OUTPUT: "+str(output))
         # print("output: "+str(output))
         for event in output['entry']:
             messaging = event['messaging']
