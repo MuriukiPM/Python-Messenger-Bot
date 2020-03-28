@@ -9,12 +9,16 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 load_dotenv()
-if 'ACCESS_TOKEN' not in env or 'VERIFY_TOKEN' not in env: 
+if 'PAGE_ACCESS_TOKEN' not in env or 'VERIFY_TOKEN' not in env or 'APP_SECRET' not in env: 
     log.error('Be sure to set all environment vars')
     sys.exit(1)
-ACCESS_TOKEN = env.get('ACCESS_TOKEN')
+PAGE_ACCESS_TOKEN = env.get('PAGE_ACCESS_TOKEN')
 VERIFY_TOKEN = env.get('VERIFY_TOKEN')
-bot = Bot(ACCESS_TOKEN)
+APP_SECRET = env.get('APP_SECRET')
+API_VERSION = env.get('API_VERSION')
+# bot = Bot(PAGE_ACCESS_TOKEN)
+# bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION)
+bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION, app_secret=APP_SECRET)
 
 @app.route('/', methods=['GET', 'POST'])
 def receive_message():
@@ -23,35 +27,64 @@ def receive_message():
         # that confirms all requests that your bot receives came from Facebook. 
         token_sent = request.args.get("hub.verify_token")
         return verify_fb_token(token_sent)
-    # if the request was not GET, it must be POST and we can just proceed with sending a message # back to user
+    # if the request was not GET, it must be POST and we can just proceed with sending a message back to user
     else:
     # get whatever message a user sent the bot
         output = request.get_json()
         # log.warn("OUTPUT: "+str(output))
         # print("output: "+str(output))
-        for event in output['entry']:
-            messaging = event['messaging']
-            for message in messaging:
-                #Facebook Messenger ID for user so we know where to send response back to
-                recipient_id = message['sender']['id']
-                if message.get('message'):
-                    if message['message'].get('text'):
-                        response = get_generic()
-                        bot.send_action(recipient_id, "mark_seen")
-                        bot.send_action(recipient_id, "typing_on")
-                        bot.send_generic_message(recipient_id, response)
-                    #if user sends us a GIF, photo,video, or any other non-text item
-                    if message['message'].get('attachments'):
-                        text, buttons = get_buttons()
-                        bot.send_action(recipient_id, "mark_seen")
-                        bot.send_action(recipient_id, "typing_on")
-                        bot.send_button_message(recipient_id, text, buttons)
-                if message.get('postback'):
-                    bot.send_action(recipient_id, "mark_seen")
-                    # bot.send_action(recipient_id, "typing_on")
-                    bot.send_text_message(recipient_id, message['postback']['payload'])
+        actions(output)
         return "Message Processed"
 
+def actions(output):
+    for event in output['entry']:
+        messaging = event['messaging']
+        for message in messaging:
+            #Facebook Messenger ID for user so we know where to send response back to
+            recipient_id = message['sender']['id']
+            user = {}
+            usr = bot.get_user_info(recipient_id, ["first_name", "last_name"])
+            # log.warn("USER: "+str(usr))
+            if usr is not None:
+                user['user_info'] = usr
+                user['user_data'] = {}
+            if message.get('message'):
+                if message['message'].get('text'):
+                    response = get_generic()
+                    try:
+                        res = bot.send_action(recipient_id, "mark_seen")
+                        # log.warn('RESPONSE: '+str(res))
+                        if res.get('error'):
+                            log.error('ERROR: '+str(res['error']))
+                    except Exception as e:
+                        log.error('ERROR: '+str(e))
+                    try:
+                        res = bot.send_action(recipient_id, "typing_on")
+                        # log.warn('RESPONSE: '+str(res))
+                        if res.get('error'):
+                            log.error('ERROR: '+str(res['error']))
+                    except Exception as e:
+                        log.error('ERROR: '+str(e))
+                    try:
+                        res = bot.send_generic_message(recipient_id, response)
+                        # log.warn('RESPONSE: '+str(res))
+                        if res.get('error'):
+                            log.error('ERROR: '+str(res['error']))
+                    except Exception as e:
+                        log.error('ERROR: '+str(e))
+                #if user sends us a GIF, photo,video, or any other non-text item
+                if message['message'].get('attachments'):
+                    text, buttons = get_buttons()
+                    bot.send_action(recipient_id, "mark_seen")
+                    bot.send_action(recipient_id, "typing_on")
+                    bot.send_button_message(recipient_id, text, buttons)
+            if message.get('postback'):
+                bot.send_action(recipient_id, "mark_seen")
+                # bot.send_action(recipient_id, "typing_on")
+                bot.send_text_message(recipient_id, message['postback']['payload'])
+    
+    # return
+        
 #chooses a random message to send to the user
 def get_message():
     sample_responses = ["You are stunning!", "We're proud of you.", "Keep on being you!", "We're grateful to know you :)"]
