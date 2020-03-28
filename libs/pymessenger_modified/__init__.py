@@ -1,5 +1,5 @@
 '''
-@ Library inspired heavily by this work: 
+@ Library inspired heavily by this work: https://github.com/davidchua/pymessenger
 @
 @
 '''
