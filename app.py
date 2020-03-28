@@ -1,4 +1,3 @@
-import random
 import sys
 from flask import Flask, request
 from libs.pymessenger_modified import Bot
@@ -53,18 +52,29 @@ def actions(output):
                         log.error("ERROR: "+str(error))
 
                         continue
-                    text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
-                    "\n"
-                    "\nThanks for getting in touch with us on Messenger. How can we help you today"
-                    bot.send_text_message(recipient_id, text=text)
+                    # text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
+                    # "\n"
+                    # "\nThanks for getting in touch with us on Messenger. How can we help you today"
+                    # bot.send_text_message(recipient_id, text=text)
+                    text, buttons = get_started_buttons(user)
+                    bot.send_action(recipient_id, "mark_seen")
+                    bot.send_action(recipient_id, "typing_on")
+                    bot.send_button_message(recipient_id, text, buttons)
                     
                     continue
                 user = get_user(recipient_id)
                 if user is None: pass
-                bot.send_action(recipient_id, "mark_seen")
-                ##bot.send_action(recipient_id, "typing_on")
-                bot.send_text_message(recipient_id, message['postback']['payload'])
+                elif  message['postback']['payload'] == "boy":
+                    bot.send_action(recipient_id, "mark_seen")
+                    bot.send_text_message(recipient_id, "it's a boy!")
+                    
+                    continue
+                elif  message['postback']['payload'] == "girl":
+                    bot.send_action(recipient_id, "mark_seen")
+                    bot.send_text_message(recipient_id, "it's a girl!")
 
+                    continue
+                
                 continue
             elif message.get('message'):
                 user = get_user(recipient_id)
@@ -118,6 +128,9 @@ def actions(output):
 # getting started
 # TODO: Check for user in DB
 def get_started(recipient_id):
+    '''
+    Create new user record and append to Users
+    '''
     user = {}
     usr = bot.get_user_info(recipient_id, ["first_name", "last_name"])
     # log.warn("USER: "+str(usr))
@@ -129,15 +142,27 @@ def get_started(recipient_id):
     else: return None, 'Could not fetch user'
 
 def get_user(recipient_id):
+    '''
+    Check if we have user in memory
+    '''
     if users.get(recipient_id): return users[recipient_id]
    
     return None
 
-#chooses a random message to send to the user
-def get_message():
-    sample_responses = ["You are stunning!", "We're proud of you.", "Keep on being you!", "We're grateful to know you :)"]
-    # return selected item to the user
-    return random.choice(sample_responses)
+def get_started_buttons(user):
+    '''
+    Create starting message and buttons
+    '''
+    text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
+    "\n"
+    "\nThanks for getting in touch with us on Messenger.Please selext one"
+    buttons = []
+    button = Button(title='Boy', type='postback', payload="boy")
+    buttons.append(button)
+    button = Button(title='Girl', type='postback', payload='girl')
+    buttons.append(button)
+    
+    return text, buttons
 
 def get_generic():
     elements = []
