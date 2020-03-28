@@ -16,6 +16,7 @@ PAGE_ACCESS_TOKEN = env.get('PAGE_ACCESS_TOKEN')
 VERIFY_TOKEN = env.get('VERIFY_TOKEN')
 APP_SECRET = env.get('APP_SECRET')
 API_VERSION = env.get('API_VERSION')
+users = {}
 # bot = Bot(PAGE_ACCESS_TOKEN)
 # bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION)
 bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION, app_secret=APP_SECRET)
@@ -32,23 +33,42 @@ def receive_message():
     # get whatever message a user sent the bot
         output = request.get_json()
         # log.warn("OUTPUT: "+str(output))
-        # print("output: "+str(output))
         actions(output)
         return "Message Processed"
 
+# TODO: Complete logic for when user record is not in memory
 def actions(output):
     for event in output['entry']:
         messaging = event['messaging']
+        # log.warn("MESSAGING: "+str(messaging))
         for message in messaging:
             #Facebook Messenger ID for user so we know where to send response back to
             recipient_id = message['sender']['id']
-            user = {}
-            usr = bot.get_user_info(recipient_id, ["first_name", "last_name"])
-            # log.warn("USER: "+str(usr))
-            if usr is not None:
-                user['user_info'] = usr
-                user['user_data'] = {}
-            if message.get('message'):
+            if message.get('postback'):
+                if  message['postback']['payload'] == "Get Started":
+                    user, error = get_started(recipient_id)
+                    if error is not None: 
+                        text = "Oops, something went wrong. We are working on it. Come back later!"
+                        bot.send_text_message(recipient_id, text=text)
+                        log.error("ERROR: "+str(error))
+
+                        continue
+                    text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
+                    "\n"
+                    "\nThanks for getting in touch with us on Messenger. How can we help you today"
+                    bot.send_text_message(recipient_id, text=text)
+                    
+                    continue
+                user = get_user(recipient_id)
+                if user is None: pass
+                bot.send_action(recipient_id, "mark_seen")
+                ##bot.send_action(recipient_id, "typing_on")
+                bot.send_text_message(recipient_id, message['postback']['payload'])
+
+                continue
+            elif message.get('message'):
+                user = get_user(recipient_id)
+                if user is None: pass
                 if message['message'].get('text'):
                     response = get_generic()
                     try:
@@ -56,35 +76,63 @@ def actions(output):
                         # log.warn('RESPONSE: '+str(res))
                         if res.get('error'):
                             log.error('ERROR: '+str(res['error']))
+
+                            continue
                     except Exception as e:
                         log.error('ERROR: '+str(e))
+
+                        continue
                     try:
                         res = bot.send_action(recipient_id, "typing_on")
                         # log.warn('RESPONSE: '+str(res))
                         if res.get('error'):
                             log.error('ERROR: '+str(res['error']))
+
+                            continue
                     except Exception as e:
                         log.error('ERROR: '+str(e))
+
+                        continue
                     try:
                         res = bot.send_generic_message(recipient_id, response)
                         # log.warn('RESPONSE: '+str(res))
                         if res.get('error'):
                             log.error('ERROR: '+str(res['error']))
+
+                            continue
                     except Exception as e:
                         log.error('ERROR: '+str(e))
+
+                        continue
                 #if user sends us a GIF, photo,video, or any other non-text item
-                if message['message'].get('attachments'):
+                elif message['message'].get('attachments'):
                     text, buttons = get_buttons()
                     bot.send_action(recipient_id, "mark_seen")
                     bot.send_action(recipient_id, "typing_on")
                     bot.send_button_message(recipient_id, text, buttons)
-            if message.get('postback'):
-                bot.send_action(recipient_id, "mark_seen")
-                # bot.send_action(recipient_id, "typing_on")
-                bot.send_text_message(recipient_id, message['postback']['payload'])
-    
-    # return
-        
+
+                    continue
+
+    return
+
+# getting started
+# TODO: Check for user in DB
+def get_started(recipient_id):
+    user = {}
+    usr = bot.get_user_info(recipient_id, ["first_name", "last_name"])
+    # log.warn("USER: "+str(usr))
+    if usr is not None:
+        user['user_info'], user['user_data'] = usr, {}
+        users[recipient_id] = user
+
+        return user, None
+    else: return None, 'Could not fetch user'
+
+def get_user(recipient_id):
+    if users.get(recipient_id): return users[recipient_id]
+   
+    return None
+
 #chooses a random message to send to the user
 def get_message():
     sample_responses = ["You are stunning!", "We're proud of you.", "Keep on being you!", "We're grateful to know you :)"]

@@ -8,7 +8,6 @@ from .graph_api import FacebookGraphApi
 from . import utils
 
 class Bot(FacebookGraphApi):
-
     def __init__(self, *args, **kwargs):
         super(Bot, self).__init__(*args, **kwargs)
         self.messanging_graph_url = '{0}/me/messages'.format(self.graph_url)
@@ -194,9 +193,8 @@ class Bot(FacebookGraphApi):
         return self.send_recipient(recipient_id, payload)
         
     def send_raw(self, payload):
-        # request_endpoint = '{0}/me/messages'.format(self.graph_url)
         auth = self.auth_args
-        log.warn('AUTH'+str(auth))
+        # log.warn('AUTH'+str(auth))
         return requests.post(
             self.messanging_graph_url,
             params=auth,
@@ -215,7 +213,6 @@ class Bot(FacebookGraphApi):
             params=self.auth_args
             ).json()
     
-    # update: 03-27-20 - add a request endpoint using graph_url
     def send_image(self, recipient_id, image_path):
         '''Send an image to the specified recipient.
         Image must be PNG or JPEG or GIF (more might be supported).
@@ -278,7 +275,6 @@ class Bot(FacebookGraphApi):
         # return self.send_raw(payload)
         return self.send_attachment_url(recipient_id, "image", image_url)
 
-    # update: 03-27-20 - add a request endpoint using graph_url
     def send_audio(self, recipient_id, audio_path):
         '''Send audio to the specified recipient.
         Audio must be MP3 or WAV
@@ -341,7 +337,6 @@ class Bot(FacebookGraphApi):
 
         return self.send_attachment_url(recipient_id, "audio", audio_url)
 
-    # update: 03-27-20 - add a request endpoint using graph_url
     def send_video(self, recipient_id, video_path):
         '''Send video to the specified recipient.
         Video should be MP4 or MOV, but supports more (https://www.facebook.com/help/218673814818907).
@@ -404,7 +399,6 @@ class Bot(FacebookGraphApi):
 
         return self.send_attachment_url(recipient_id, "video", video_url)
 
-    # update: 03-27-20 - add a request endpoint using graph_url
     def send_file(self, recipient_id, file_path):
         '''Send file to the specified recipient.
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/file-attachment
