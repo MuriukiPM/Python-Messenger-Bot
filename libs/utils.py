@@ -1,4 +1,5 @@
 from .pymessenger_modified import Bot, Element, Button
+from dao import create_user_by_messenger, update_user_by_messenger, find_user_by_messenger_id
 # import logging as log
 
 class PostbackSwitcher(object):
@@ -28,6 +29,11 @@ class PostbackSwitcher(object):
             # log.error("ERROR: "+str(error))
 
             return error
+        dbuser  = find_user_by_messenger_id(self.recipient_id)
+        if dbuser is None:
+            create_user_by_messenger(self.recipient_id, 
+                                     self.user['user_info']['first_name'],
+                                     self.user['user_info']['last_name'])
         text, buttons = get_started_buttons(self.user)
         self.bot.send_action(self.recipient_id, "mark_seen")
         self.bot.send_action(self.recipient_id, "typing_on")
@@ -41,6 +47,11 @@ class PostbackSwitcher(object):
         '''
         self.user = get_user(self.recipient_id, self.Users)
         if self.user is None: return "Current user not in memory"
+        dbuser  = find_user_by_messenger_id(self.recipient_id)
+        if dbuser is None: return "Current user not in database"
+        #save to db
+        update_user_by_messenger(self.recipient_id, gender='Male')
+        #save to temp memory
         self.Users[self.recipient_id]['user_data']['gender'] = 'Male'
         self.bot.send_action(self.recipient_id, "mark_seen")
         text, buttons = get_age_buttons(self.user, "It's a boy!")
@@ -56,6 +67,11 @@ class PostbackSwitcher(object):
         '''
         self.user = get_user(self.recipient_id, self.Users)
         if self.user is None: return "Current user not in memory"
+        dbuser = find_user_by_messenger_id(self.recipient_id)
+        if dbuser is None: return "Current user not in database"
+        #save to db
+        update_user_by_messenger(self.recipient_id, gender='Female')
+        #save to temp memory
         self.Users[self.recipient_id]['user_data']['gender'] = 'Female'
         self.bot.send_action(self.recipient_id, "mark_seen")
         text, buttons = get_age_buttons(self.user, "It's a girl!")
@@ -71,6 +87,11 @@ class PostbackSwitcher(object):
         '''
         self.user = get_user(self.recipient_id, self.Users)
         if self.user is None: return "Current user not in memory"
+        dbuser = find_user_by_messenger_id(self.recipient_id)
+        if dbuser is None: return "Current user not in database"
+        #save to db
+        update_user_by_messenger(self.recipient_id, age='Young')
+        #save to temp memory
         self.Users[self.recipient_id]['user_data']['age'] = 'Young'
         self.bot.send_action(self.recipient_id, "mark_seen")
         text, buttons = get_result_button(self.user)
@@ -85,6 +106,11 @@ class PostbackSwitcher(object):
         '''
         self.user = get_user(self.recipient_id, self.Users)
         if self.user is None: return "Current user not in memory"
+        dbuser  = find_user_by_messenger_id(self.recipient_id)
+        if dbuser is None: return "Current user not in database"
+        #save to db
+        update_user_by_messenger(self.recipient_id, age='Old')
+        #save to temp memory
         self.Users[self.recipient_id]['user_data']['age'] = 'Old'
         self.bot.send_action(self.recipient_id, "mark_seen")
         text, buttons = get_result_button(self.user)
@@ -111,7 +137,6 @@ class PostbackSwitcher(object):
         
         return None
 
-# getting started
 # TODO: Check for user in DB
 def get_started(recipient_id, bot: Bot, Users):
     '''
@@ -135,13 +160,16 @@ def get_user(recipient_id, Users):
    
     return None
 
+def get_db_user(recipient_id):
+    return find_user_by_messenger_id(messenger_id=recipient_id)
+
 def get_started_buttons(user):
     '''
     Create starting message and buttons
     '''
-    text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
-    "\n"
-    "\nThanks for getting in touch with us on Messenger.Please selext one"
+    text = ("Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
+            "\n"
+            "\nThanks for getting in touch with us on Messenger.Please select one")
     buttons = []
     button = Button(title='Boy', type='postback', payload="boy")
     buttons.append(button)
