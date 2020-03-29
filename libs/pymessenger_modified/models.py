@@ -1,6 +1,5 @@
 import json
 import six
-
 from . import Bot
 
 class Element(dict):
