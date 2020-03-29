@@ -2,6 +2,7 @@ import sys
 from flask import Flask, request
 from libs.pymessenger_modified import Bot
 from libs.pymessenger_modified import Element, Button
+from libs.utils import PostbackSwitcher
 import logging as log
 from os import environ as env
 from dotenv import load_dotenv
@@ -15,7 +16,8 @@ PAGE_ACCESS_TOKEN = env.get('PAGE_ACCESS_TOKEN')
 VERIFY_TOKEN = env.get('VERIFY_TOKEN')
 APP_SECRET = env.get('APP_SECRET')
 API_VERSION = env.get('API_VERSION')
-users = {}
+Users = {}
+postbackSwitcher  = PostbackSwitcher()
 # bot = Bot(PAGE_ACCESS_TOKEN)
 # bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION)
 bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION, app_secret=APP_SECRET)
@@ -32,11 +34,13 @@ def receive_message():
     # get whatever message a user sent the bot
         output = request.get_json()
         # log.warn("OUTPUT: "+str(output))
+        log.warn("USERS: "+str(Users))
         actions(output)
         return "Message Processed"
 
 # TODO: Complete logic for when user record is not in memory
 def actions(output):
+    global Users
     for event in output['entry']:
         messaging = event['messaging']
         # log.warn("MESSAGING: "+str(messaging))
@@ -44,125 +48,90 @@ def actions(output):
             #Facebook Messenger ID for user so we know where to send response back to
             recipient_id = message['sender']['id']
             if message.get('postback'):
-                if  message['postback']['payload'] == "Get Started":
-                    user, error = get_started(recipient_id)
-                    if error is not None: 
-                        text = "Oops, something went wrong. We are working on it. Come back later!"
-                        bot.send_text_message(recipient_id, text=text)
-                        log.error("ERROR: "+str(error))
-
-                        continue
-                    # text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
-                    # "\n"
-                    # "\nThanks for getting in touch with us on Messenger. How can we help you today"
-                    # bot.send_text_message(recipient_id, text=text)
-                    text, buttons = get_started_buttons(user)
-                    bot.send_action(recipient_id, "mark_seen")
-                    bot.send_action(recipient_id, "typing_on")
-                    bot.send_button_message(recipient_id, text, buttons)
-                    
-                    continue
-                user = get_user(recipient_id)
-                if user is None: pass
-                elif  message['postback']['payload'] == "boy":
-                    bot.send_action(recipient_id, "mark_seen")
-                    bot.send_text_message(recipient_id, "it's a boy!")
-                    
-                    continue
-                elif  message['postback']['payload'] == "girl":
-                    bot.send_action(recipient_id, "mark_seen")
-                    bot.send_text_message(recipient_id, "it's a girl!")
-
-                    continue
+                error = postbackSwitcher.payload_string_to_response(payload_string=message['postback']['payload'],
+                                                                    recipient_id = recipient_id,
+                                                                    bot=bot,
+                                                                    Users=Users,
+                                                                    user=None
+                                                                    )
+                if error is not None: log.error("ERROR: "+str(error))
                 
-                continue
-            elif message.get('message'):
-                user = get_user(recipient_id)
-                if user is None: pass
-                if message['message'].get('text'):
-                    response = get_generic()
-                    try:
-                        res = bot.send_action(recipient_id, "mark_seen")
-                        # log.warn('RESPONSE: '+str(res))
-                        if res.get('error'):
-                            log.error('ERROR: '+str(res['error']))
+            #     if  message['postback']['payload'] == "start":
+            #         user, error = get_started(recipient_id, bot)
+            #         if error is not None: 
+            #             text = "Oops, something went wrong. We are working on it. Come back later!"
+            #             bot.send_text_message(recipient_id, text=text)
+            #             log.error("ERROR: "+str(error))
 
-                            continue
-                    except Exception as e:
-                        log.error('ERROR: '+str(e))
+            #             continue
+            #         text, buttons = get_started_buttons(user)
+            #         bot.send_action(recipient_id, "mark_seen")
+            #         bot.send_action(recipient_id, "typing_on")
+            #         bot.send_button_message(recipient_id, text, buttons)
+                    
+            #         continue
+            #     user = get_user(recipient_id)
+            #     if user is None: pass
+            #     elif  message['postback']['payload'] == "boy":
+            #         bot.send_action(recipient_id, "mark_seen")
+            #         bot.send_text_message(recipient_id, "it's a boy!")
+                    
+            #         continue
+            #     elif  message['postback']['payload'] == "girl":
+            #         bot.send_action(recipient_id, "mark_seen")
+            #         bot.send_text_message(recipient_id, "it's a girl!")
 
-                        continue
-                    try:
-                        res = bot.send_action(recipient_id, "typing_on")
-                        # log.warn('RESPONSE: '+str(res))
-                        if res.get('error'):
-                            log.error('ERROR: '+str(res['error']))
+            #         continue
+                
+            #     continue
+            # elif message.get('message'):
+            #     user = get_user(recipient_id)
+            #     if user is None: pass
+            #     if message['message'].get('text'):
+            #         response = get_generic()
+            #         try:
+            #             res = bot.send_action(recipient_id, "mark_seen")
+            #             # log.warn('RESPONSE: '+str(res))
+            #             if res.get('error'):
+            #                 log.error('ERROR: '+str(res['error']))
 
-                            continue
-                    except Exception as e:
-                        log.error('ERROR: '+str(e))
+            #                 continue
+            #         except Exception as e:
+            #             log.error('ERROR: '+str(e))
 
-                        continue
-                    try:
-                        res = bot.send_generic_message(recipient_id, response)
-                        # log.warn('RESPONSE: '+str(res))
-                        if res.get('error'):
-                            log.error('ERROR: '+str(res['error']))
+            #             continue
+            #         try:
+            #             res = bot.send_action(recipient_id, "typing_on")
+            #             # log.warn('RESPONSE: '+str(res))
+            #             if res.get('error'):
+            #                 log.error('ERROR: '+str(res['error']))
 
-                            continue
-                    except Exception as e:
-                        log.error('ERROR: '+str(e))
+            #                 continue
+            #         except Exception as e:
+            #             log.error('ERROR: '+str(e))
 
-                        continue
-                #if user sends us a GIF, photo,video, or any other non-text item
-                elif message['message'].get('attachments'):
-                    text, buttons = get_buttons()
-                    bot.send_action(recipient_id, "mark_seen")
-                    bot.send_action(recipient_id, "typing_on")
-                    bot.send_button_message(recipient_id, text, buttons)
+            #             continue
+            #         try:
+            #             res = bot.send_generic_message(recipient_id, response)
+            #             # log.warn('RESPONSE: '+str(res))
+            #             if res.get('error'):
+            #                 log.error('ERROR: '+str(res['error']))
 
-                    continue
+            #                 continue
+            #         except Exception as e:
+            #             log.error('ERROR: '+str(e))
+
+            #             continue
+            #     #if user sends us a GIF, photo,video, or any other non-text item
+            #     elif message['message'].get('attachments'):
+            #         text, buttons = get_buttons()
+            #         bot.send_action(recipient_id, "mark_seen")
+            #         bot.send_action(recipient_id, "typing_on")
+            #         bot.send_button_message(recipient_id, text, buttons)
+
+            #         continue
 
     return
-
-# getting started
-# TODO: Check for user in DB
-def get_started(recipient_id):
-    '''
-    Create new user record and append to Users
-    '''
-    user = {}
-    usr = bot.get_user_info(recipient_id, ["first_name", "last_name"])
-    # log.warn("USER: "+str(usr))
-    if usr is not None:
-        user['user_info'], user['user_data'] = usr, {}
-        users[recipient_id] = user
-
-        return user, None
-    else: return None, 'Could not fetch user'
-
-def get_user(recipient_id):
-    '''
-    Check if we have user in memory
-    '''
-    if users.get(recipient_id): return users[recipient_id]
-   
-    return None
-
-def get_started_buttons(user):
-    '''
-    Create starting message and buttons
-    '''
-    text="Hi "+user['user_info']['first_name']+"! Welcome to Hello World."
-    "\n"
-    "\nThanks for getting in touch with us on Messenger.Please selext one"
-    buttons = []
-    button = Button(title='Boy', type='postback', payload="boy")
-    buttons.append(button)
-    button = Button(title='Girl', type='postback', payload='girl')
-    buttons.append(button)
-    
-    return text, buttons
 
 def get_generic():
     elements = []
