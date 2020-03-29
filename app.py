@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 load_dotenv()
-if 'PAGE_ACCESS_TOKEN' not in env or 'VERIFY_TOKEN' not in env or 'APP_SECRET' not in env: 
+secrets = ['PAGE_ACCESS_TOKEN','VERIFY_TOKEN','APP_SECRET']
+if not all([secret in env for secret in secrets]): 
     log.error('Be sure to set all environment vars')
     sys.exit(1)
 PAGE_ACCESS_TOKEN = env.get('PAGE_ACCESS_TOKEN')
@@ -18,8 +19,6 @@ APP_SECRET = env.get('APP_SECRET')
 API_VERSION = env.get('API_VERSION')
 Users = {}
 postbackSwitcher  = PostbackSwitcher()
-# bot = Bot(PAGE_ACCESS_TOKEN)
-# bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION)
 bot = Bot(PAGE_ACCESS_TOKEN, api_version=API_VERSION, app_secret=APP_SECRET)
 
 @app.route('/', methods=['GET', 'POST'])
