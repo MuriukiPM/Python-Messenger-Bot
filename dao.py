@@ -6,7 +6,7 @@ import logging as log
 from sqlalchemy.sql import func
 from os import environ as env
 from dotenv import load_dotenv
-from collections import namedtuple
+
 load_dotenv()
 creds = ['DB_USER','DB_HOST','DB_NAME','DB_PASS','DB_PORT']
 if not all([cred in env for cred in creds]): 
@@ -38,11 +38,12 @@ def create_user_by_messenger(messenger_id: str, first_name: str, last_name: str,
     session.commit()
 
 def update_user_by_messenger(messenger_id: str, first_name: str = None, last_name: str = None, age: int = None, gender: str = None):
+    payload, cols = {}, {'first_name':first_name, 'last_name':last_name, 'age':age, 'gender':gender}
+    for key, value in cols.items(): 
+        if value is not None: payload[key] = value
     session.query(DBUsers) \
             .filter(DBUsers.messenger_id==messenger_id) \
-            .update({'age':age, 
-                     'gender':gender}
-                    )
+            .update(payload)
     session.commit()
 
 def find_user_by_messenger_id(messenger_id: str):
