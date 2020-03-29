@@ -55,35 +55,6 @@ def actions(output):
                                                                     user=None
                                                                     )
                 if error is not None: log.error("ERROR: "+str(error))
-                
-            #     if  message['postback']['payload'] == "start":
-            #         user, error = get_started(recipient_id, bot)
-            #         if error is not None: 
-            #             text = "Oops, something went wrong. We are working on it. Come back later!"
-            #             bot.send_text_message(recipient_id, text=text)
-            #             log.error("ERROR: "+str(error))
-
-            #             continue
-            #         text, buttons = get_started_buttons(user)
-            #         bot.send_action(recipient_id, "mark_seen")
-            #         bot.send_action(recipient_id, "typing_on")
-            #         bot.send_button_message(recipient_id, text, buttons)
-                    
-            #         continue
-            #     user = get_user(recipient_id)
-            #     if user is None: pass
-            #     elif  message['postback']['payload'] == "boy":
-            #         bot.send_action(recipient_id, "mark_seen")
-            #         bot.send_text_message(recipient_id, "it's a boy!")
-                    
-            #         continue
-            #     elif  message['postback']['payload'] == "girl":
-            #         bot.send_action(recipient_id, "mark_seen")
-            #         bot.send_text_message(recipient_id, "it's a girl!")
-
-            #         continue
-                
-            #     continue
             # elif message.get('message'):
             #     user = get_user(recipient_id)
             #     if user is None: pass

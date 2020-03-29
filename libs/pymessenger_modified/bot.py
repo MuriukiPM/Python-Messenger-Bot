@@ -103,20 +103,6 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': {
-        #         'id': recipient_id
-        #     },
-        #     'message': {
-        #         "attachment": {
-        #             "type": "template",
-        #             "payload": {
-        #                 "template_type": "generic",
-        #                 "elements": elements
-        #             }
-        #         }
-        #     }
-        # }
         message = {
             "attachment": {
                 "type": "template",
@@ -140,22 +126,6 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-
-        # payload = {
-        #     'recipient': {
-        #         'id': recipient_id
-        #     },
-        #     'message': {
-        #         "attachment": {
-        #             "type": "template",
-        #             "payload": {
-        #                 "template_type": "button",
-        #                 "text": text,
-        #                 "buttons": buttons
-        #             }
-        #         }
-        #     }
-        # }
         message = {
             "attachment": {
                 "type": "template",
@@ -180,12 +150,6 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': {
-        #         'id': recipient_id
-        #     },
-        #     'sender_action': action
-        # }
         payload = {
             'sender_action': action
         }
@@ -202,7 +166,6 @@ class Bot(FacebookGraphApi):
         ).json()
 
     def send_media_raw(self, data):
-        # request_endpoint = '{0}/me/messages'.format(self.graph_url)
         multipart_header = {
             'Content-Type': data.content_type
         }
@@ -213,6 +176,7 @@ class Bot(FacebookGraphApi):
             params=self.auth_args
             ).json()
     
+    # TODO: Convert this to a lambda?
     def send_image(self, recipient_id, image_path):
         '''Send an image to the specified recipient.
         Image must be PNG or JPEG or GIF (more might be supported).
@@ -223,27 +187,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'image',
-        #                 'payload': {}
-        #             }
-        #         }
-        #     ),
-        #     'filedata': (image_path, open(image_path, 'rb'))
-        # }
-        # multipart_data = MultipartEncoder(payload)
-
-        # return self.send_media_raw(multipart_data)
         return self.send_attachment(recipient_id, "image", image_path)
 
+    # TODO: Convert this to a lambda?
     def send_image_url(self, recipient_id, image_url):
         '''Send an image to specified recipient using URL.
         Image must be PNG or JPEG or GIF (more might be supported).
@@ -254,27 +200,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'image',
-        #                 'payload': {
-        #                     'url': image_url
-        #                 }
-        #             }
-        #         }
-        #     )
-        # }
-
-        # return self.send_raw(payload)
         return self.send_attachment_url(recipient_id, "image", image_url)
 
+    # TODO: Convert this to a lambda?
     def send_audio(self, recipient_id, audio_path):
         '''Send audio to the specified recipient.
         Audio must be MP3 or WAV
@@ -285,27 +213,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'audio',
-        #                 'payload': {}
-        #             }
-        #         }
-        #     ),
-        #     'filedata': (audio_path, open(audio_path, 'rb'))
-        # }
-        # multipart_data = MultipartEncoder(payload)
-    
-        # return self.send_media_raw(multipart_data)
         return self.send_attachment(recipient_id, "audio", audio_path)
 
+    # TODO: Convert this to a lambda?
     def send_audio_url(self, recipient_id, audio_url):
         '''Send audio to specified recipient using URL.
         Audio must be MP3 or WAV
@@ -316,27 +226,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'audio',
-        #                 'payload': {
-        #                     'url': audio_url
-        #                 }
-        #             }
-        #         }
-        #     )
-        # }
-        # return self.send_raw(payload)
-
         return self.send_attachment_url(recipient_id, "audio", audio_url)
 
+    # TODO: Convert this to a lambda?
     def send_video(self, recipient_id, video_path):
         '''Send video to the specified recipient.
         Video should be MP4 or MOV, but supports more (https://www.facebook.com/help/218673814818907).
@@ -347,27 +239,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'video',
-        #                 'payload': {}
-        #             }
-        #         }
-        #     ),
-        #     'filedata': (video_path, open(video_path, 'rb'))
-        # }
-        # multipart_data = MultipartEncoder(payload)
-        
-        # return self.send_media_raw(multipart_data)
         return self.send_attachment(recipient_id, "video", video_path)
-        
+
+    # TODO: Convert this to a lambda?    
     def send_video_url(self, recipient_id, video_url):
         '''Send video to specified recipient using URL.
         Video should be MP4 or MOV, but supports more (https://www.facebook.com/help/218673814818907).
@@ -378,27 +252,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'audio',
-        #                 'payload': {
-        #                     'url': video_url
-        #                 }
-        #             }
-        #         }
-        #     )
-        # }
-        # return self.send_raw(payload)
-
         return self.send_attachment_url(recipient_id, "video", video_url)
 
+    # TODO: Convert this to a lambda?
     def send_file(self, recipient_id, file_path):
         '''Send file to the specified recipient.
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/file-attachment
@@ -408,27 +264,9 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'file',
-        #                 'payload': {}
-        #             }
-        #         }
-        #     ),
-        #     'filedata': (file_path, open(file_path, 'rb'))
-        # }
-        # multipart_data = MultipartEncoder(payload)
-
-        # return self.send_media_raw(multipart_data)
         return self.send_attachment(recipient_id, "file", file_path)
 
+    # TODO: Convert this to a lambda?
     def send_file_url(self, recipient_id, file_url):
         '''Send file to the specified recipient.
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/file-attachment
@@ -438,25 +276,6 @@ class Bot(FacebookGraphApi):
         Output:
             Response from API as <dict>
         '''
-        # payload = {
-        #     'recipient': json.dumps(
-        #         {
-        #             'id': recipient_id
-        #         }
-        #     ),
-        #     'message': json.dumps(
-        #         {
-        #             'attachment': {
-        #                 'type': 'file',
-        #                 'payload': {
-        #                     'url': file_url
-        #                 }
-        #             }
-        #         }
-        #     )
-        # }
-
-        # return self.send_raw(payload)
         return self.send_attachment_url(recipient_id, "file", file_url)
     
     def get_user_info(self, user_id, fields=None):
