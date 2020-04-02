@@ -1,6 +1,7 @@
 NOTES.md
 .vscode
 *.exe
-__pycache__/
+*.env
 Pipfile
 Pipfile.lock
+__pycache__/

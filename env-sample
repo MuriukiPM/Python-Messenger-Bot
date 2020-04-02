@@ -1,0 +1,9 @@
+PAGE_ACCESS_TOKEN=<your facebook page access token!>
+VERIFY_TOKEN=<your facebook page app verification token!>
+API_VERSION=<the facebook api version!>
+APP_SECRET=<your facebook app secret!>
+DB_USER=<your db user name!>
+DB_NAME=<your db name!>
+DB_HOST=<your db host!>
+DB_PORT=<your db aceess port!>
+DB_PASS=<your db password!>
